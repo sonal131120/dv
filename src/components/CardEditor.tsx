@@ -1,53 +1,52 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   Save,
   Eye,
   ArrowLeft,
-  Palette,
-  Type,
-  Layout,
-  Share2,
+  User,
+  Building,
+  Mail,
+  Phone,
   Globe,
-  Lock,
-  AlertCircle,
-  Upload,
-  Download,
-  Copy,
-  Trash2,
+  MapPin,
+  MessageCircle,
+  Palette,
+  Layout,
+  Type,
+  AlignLeft,
+  AlignCenter,
+  AlignRight,
+  Smartphone,
+  Monitor,
+  Tablet,
+  Circle,
+  Square,
+  Hexagon,
   Plus,
-  Settings,
-  Zap,
-  Sparkles,
-  RefreshCw,
-  FolderSync as Sync,
-  Check,
-  ArrowRight,
-} from "lucide-react";
-import { useAuth } from "../hooks/useAuth";
-import { supabase } from "../lib/supabase";
-import { ImageUpload } from "./ImageUpload";
-import { CardPreview } from "./CardPreview";
-import { MediaUpload } from "./MediaUpload";
-import { ReviewsManager } from "./ReviewsManager";
+  X,
+  Upload,
+  Loader2,
+  Link,
+  Star,
+  Image as ImageIcon,
+  Video,
+  FileText,
+  Settings
+} from 'lucide-react';
+import { useAuth } from '../hooks/useAuth';
+import { supabase } from '../lib/supabase';
+import { CardPreview } from './CardPreview';
+import { ImageUpload } from './ImageUpload';
+import { MediaUpload } from './MediaUpload';
 import { ProductsServicesManager } from './ProductsServicesManager';
-import {
-  generateSocialLink,
-  SOCIAL_PLATFORMS,
-  generateAutoSyncedLinks,
-  getPlatformLogo,
-} from "../utils/socialUtils";
-import { SuccessAnimation } from "./SuccessAnimation";
-// import { ConfettiSideCannons } from "./ConfettiSideCannons";
-import type { Database } from "../lib/supabase";
+import { ReviewsManager } from './ReviewsManager';
+import { SuccessAnimation } from './SuccessAnimation';
+import { ConfettiSideCannons } from './ConfettiSideCannons';
+import { generateSocialLink, SOCIAL_PLATFORMS } from '../utils/socialUtils';
+import type { Database } from '../lib/supabase';
 
-type BusinessCard = Database["public"]["Tables"]["business_cards"]["Row"];
-type SocialLink = Database["public"]["Tables"]["social_links"]["Row"];
-
-interface CardEditorProps {
-  existingCard?: BusinessCard | null;
-  onSave: () => void;
-  onCancel: () => void;
-}
+type BusinessCard = Database['public']['Tables']['business_cards']['Row'];
+type SocialLink = Database['public']['Tables']['social_links']['Row'];
 
 interface FormData {
   // Basic Information
@@ -84,259 +83,248 @@ interface FormData {
   is_published: boolean;
 }
 
-const THEMES = [
+interface MediaItem {
+  id: string;
+  type: 'image' | 'video' | 'document';
+  url: string;
+  title: string;
+  description?: string;
+  thumbnail_url?: string;
+}
+
+interface ProductService {
+  id: string;
+  title: string;
+  description: string;
+  price?: string;
+  category?: string;
+  text_alignment?: 'left' | 'center' | 'right';
+  is_featured: boolean;
+  is_active: boolean;
+  images: any[];
+  inquiries: any[];
+}
+
+interface Review {
+  id: string;
+  review_url: string;
+  title: string;
+  created_at: string;
+}
+
+interface CardEditorProps {
+  existingCard?: BusinessCard | null;
+  onSave: () => void;
+  onCancel: () => void;
+}
+
+const PREDEFINED_THEMES = [
   {
-    name: "Ocean Blue",
-    primary: "#3B82F6",
-    secondary: "#1E40AF",
-    background: "#FFFFFF",
-    text: "#1F2937",
+    name: 'Ocean Blue',
+    primary: '#3B82F6',
+    secondary: '#1E40AF',
+    background: '#FFFFFF',
+    text: '#1F2937'
   },
   {
-    name: "Forest Green",
-    primary: "#10B981",
-    secondary: "#047857",
-    background: "#FFFFFF",
-    text: "#1F2937",
+    name: 'Forest Green',
+    primary: '#10B981',
+    secondary: '#047857',
+    background: '#FFFFFF',
+    text: '#1F2937'
   },
   {
-    name: "Sunset Orange",
-    primary: "#F59E0B",
-    secondary: "#D97706",
-    background: "#FFFFFF",
-    text: "#1F2937",
+    name: 'Sunset Orange',
+    primary: '#F59E0B',
+    secondary: '#D97706',
+    background: '#FFFFFF',
+    text: '#1F2937'
   },
   {
-    name: "Royal Purple",
-    primary: "#8B5CF6",
-    secondary: "#7C3AED",
-    background: "#FFFFFF",
-    text: "#1F2937",
+    name: 'Royal Purple',
+    primary: '#8B5CF6',
+    secondary: '#7C3AED',
+    background: '#FFFFFF',
+    text: '#1F2937'
   },
   {
-    name: "Rose Pink",
-    primary: "#EC4899",
-    secondary: "#DB2777",
-    background: "#FFFFFF",
-    text: "#1F2937",
+    name: 'Rose Pink',
+    primary: '#EC4899',
+    secondary: '#DB2777',
+    background: '#FFFFFF',
+    text: '#1F2937'
   },
   {
-    name: "Dark Mode",
-    primary: "#60A5FA",
-    secondary: "#3B82F6",
-    background: "#1F2937",
-    text: "#F9FAFB",
-  },
-  {
-    name: "Emerald",
-    primary: "#059669",
-    secondary: "#047857",
-    background: "#FFFFFF",
-    text: "#1F2937",
-  },
-  {
-    name: "Indigo",
-    primary: "#4F46E5",
-    secondary: "#3730A3",
-    background: "#FFFFFF",
-    text: "#1F2937",
-  },
-  {
-    name: "Teal",
-    primary: "#0D9488",
-    secondary: "#0F766E",
-    background: "#FFFFFF",
-    text: "#1F2937",
-  },
-  {
-    name: "Amber",
-    primary: "#D97706",
-    secondary: "#B45309",
-    background: "#FFFFFF",
-    text: "#1F2937",
-  },
+    name: 'Dark Mode',
+    primary: '#60A5FA',
+    secondary: '#3B82F6',
+    background: '#1F2937',
+    text: '#F9FAFB'
+  }
 ];
 
-const SHAPES = [
-  { id: "rectangle", name: "Rectangle", preview: "rounded-lg" },
-  { id: "rounded", name: "Rounded", preview: "rounded-2xl" },
-  // { id: "circle", name: "Circle", preview: "rounded-full aspect-square" },
-  // { id: "hexagon", name: "Hexagon", preview: "rounded-3xl" },
+const LAYOUT_STYLES = [
+  { id: 'modern', name: 'Modern', description: 'Clean and contemporary' },
+  { id: 'classic', name: 'Classic', description: 'Traditional and professional' },
+  { id: 'minimal', name: 'Minimal', description: 'Simple and elegant' },
+  { id: 'creative', name: 'Creative', description: 'Bold and artistic' }
 ];
 
-const LAYOUTS: Array<{
-  style: string;
-  alignment: string;
-  font: string;
-  name: string;
-}> = [
-  {
-    style: "modern",
-    alignment: "center",
-    font: "Inter",
-    name: "Modern Center",
-  },
-  { style: "modern", alignment: "left", font: "Inter", name: "Modern Left" },
-  {
-    style: "classic",
-    alignment: "center",
-    font: "Georgia",
-    name: "Classic Center",
-  },
-  {
-    style: "minimal",
-    alignment: "left",
-    font: "Helvetica",
-    name: "Minimal Left",
-  },
-  {
-    style: "creative",
-    alignment: "center",
-    font: "Poppins",
-    name: "Creative Center",
-  },
-  {
-    style: "elegant",
-    alignment: "right",
-    font: "Playfair Display",
-    name: "Elegant Right",
-  },
+const FONT_OPTIONS = [
+  { id: 'Inter', name: 'Inter', description: 'Modern sans-serif' },
+  { id: 'Merriweather', name: 'Merriweather', description: 'Classic serif' },
+  { id: 'Montserrat', name: 'Montserrat', description: 'Geometric sans-serif' },
+  { id: 'Playfair Display', name: 'Playfair Display', description: 'Elegant serif' },
+  { id: 'Roboto', name: 'Roboto', description: 'Google sans-serif' }
 ];
 
-
-import { useNavigate, useParams } from "react-router-dom";
+const SHAPE_OPTIONS = [
+  { id: 'rectangle', name: 'Rectangle', icon: Square },
+  { id: 'rounded', name: 'Rounded', icon: Square },
+  { id: 'circle', name: 'Circle', icon: Circle }
+];
 
 export const CardEditor: React.FC<CardEditorProps> = ({
   existingCard,
   onSave,
-  onCancel,
+  onCancel
 }) => {
   const { user } = useAuth();
-  const navigate = useNavigate();
-  const params = useParams();
-  const [activeTab, setActiveTab] = useState<
-    "basic" | "contact" | "social" | "media" | "products" | "reviews" | "design" | "advanced"
-  >("basic");
+  const [activeTab, setActiveTab] = useState<'basic' | 'contact' | 'design' | 'social' | 'media' | 'products' | 'reviews'>('basic');
   const [saving, setSaving] = useState(false);
-  const [autoSaving, setAutoSaving] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+  const [showConfetti, setShowConfetti] = useState(false);
   const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
-  const [mediaItems, setMediaItems] = useState<any[]>([]);
-  const [reviews, setReviews] = useState<any[]>([]);
-  const [products, setProducts] = useState<any[]>([]);
-  const [cardId, setCardId] = useState<string | null>(existingCard?.id || null);
-  const [showAdvancedOptions, setShowAdvancedOptions] = useState(false);
-  const [showSuccessAnimation, setShowSuccessAnimation] = useState(false);
-  const [autoSyncEnabled, setAutoSyncEnabled] = useState(false);
-  const [showConfettiCannons, setShowConfettiCannons] = useState(false);
+  const [mediaItems, setMediaItems] = useState<MediaItem[]>([]);
+  const [products, setProducts] = useState<ProductService[]>([]);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [customTheme, setCustomTheme] = useState(false);
 
   const [formData, setFormData] = useState<FormData>({
-    title: existingCard?.title || "",
-    username: existingCard?.slug || (params.username || ""),
-    globalUsername: "",
-    company: existingCard?.company || "",
-    tagline: existingCard?.bio || "",
-    profession: existingCard?.position || "",
-    avatar_url: existingCard?.avatar_url || "",
-    phone: existingCard?.phone || "",
-    whatsapp: existingCard?.whatsapp || "",
-    email: existingCard?.email || user?.email || "",
-    website: existingCard?.website || "",
-    address: existingCard?.address || "",
-    map_link: existingCard?.map_link || "",
-    theme: (existingCard?.theme as any) || THEMES[0],
-    shape: existingCard?.shape || "rectangle",
-    layout: (existingCard?.layout as any) || LAYOUTS[0],
-    is_published: existingCard?.is_published || false,
+    title: '',
+    username: '',
+    globalUsername: '',
+    company: '',
+    tagline: '',
+    profession: '',
+    avatar_url: '',
+    phone: '',
+    whatsapp: '',
+    email: '',
+    website: '',
+    address: '',
+    map_link: '',
+    theme: PREDEFINED_THEMES[0],
+    shape: 'rectangle',
+    layout: {
+      style: 'modern',
+      alignment: 'center',
+      font: 'Inter'
+    },
+    is_published: false
   });
 
   useEffect(() => {
     if (existingCard) {
-      loadCardData();
+      loadExistingCard();
+    } else {
+      // Set user email as default
+      if (user?.email) {
+        setFormData(prev => ({
+          ...prev,
+          email: user.email || ''
+        }));
+      }
     }
-  }, [existingCard]);
+  }, [existingCard, user]);
 
-  // Auto-save functionality
-  useEffect(() => {
-    if (!cardId || !user) return;
-
-    const autoSaveTimer = setTimeout(() => {
-      handleAutoSave();
-    }, 3000); // Auto-save after 3 seconds of inactivity
-
-    return () => clearTimeout(autoSaveTimer);
-  }, [formData, cardId, user]);
-
-  // Watch for publish toggle
-  useEffect(() => {
-    if (formData.is_published) {
-      setShowConfettiCannons(true);
-      setTimeout(() => setShowConfettiCannons(false), 100);
-    }
-  }, [formData.is_published]);
-
-  const loadCardData = async () => {
+  const loadExistingCard = async () => {
     if (!existingCard) return;
 
     try {
       // Load social links
       const { data: socialData } = await supabase
-        .from("social_links")
-        .select("*")
-        .eq("card_id", existingCard.id)
-        .order("display_order");
+        .from('social_links')
+        .select('*')
+        .eq('card_id', existingCard.id)
+        .order('display_order', { ascending: true });
 
-      if (socialData) {
-        setSocialLinks(socialData);
-      }
+      setSocialLinks(socialData || []);
+
+      // Parse theme and layout from JSON
+      const theme = existingCard.theme as any || PREDEFINED_THEMES[0];
+      const layout = existingCard.layout as any || {
+        style: 'modern',
+        alignment: 'center',
+        font: 'Inter'
+      };
+
+      // Check if theme is custom (not in predefined themes)
+      const isCustomTheme = !PREDEFINED_THEMES.some(t => 
+        t.primary === theme.primary && 
+        t.secondary === theme.secondary && 
+        t.background === theme.background && 
+        t.text === theme.text
+      );
+
+      setCustomTheme(isCustomTheme);
+
+      setFormData({
+        title: existingCard.title || '',
+        username: existingCard.slug || '',
+        globalUsername: '', // Will be loaded from profile
+        company: existingCard.company || '',
+        tagline: existingCard.bio || '',
+        profession: existingCard.position || '',
+        avatar_url: existingCard.avatar_url || '',
+        phone: existingCard.phone || '',
+        whatsapp: existingCard.whatsapp || '',
+        email: existingCard.email || '',
+        website: existingCard.website || '',
+        address: existingCard.address || '',
+        map_link: existingCard.map_link || '',
+        theme,
+        shape: existingCard.shape || 'rectangle',
+        layout,
+        is_published: existingCard.is_published
+      });
     } catch (error) {
-      console.error("Error loading card data:", error);
+      console.error('Error loading existing card:', error);
     }
   };
 
   const handleInputChange = (field: keyof FormData, value: any) => {
-    setFormData((prev) => {
-      // If username changes, update the route
-      if (field === "username" && value && value !== prev.username) {
-        navigate(`/user-admin/${value}`);
-      }
-      return {
-        ...prev,
-        [field]: value,
-      };
-    });
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
-  const handleAutoSave = async () => {
-    if (!user || !cardId || saving) return;
+  const handleThemeChange = (theme: typeof PREDEFINED_THEMES[0]) => {
+    setCustomTheme(false);
+    handleInputChange('theme', theme);
+  };
 
-    setAutoSaving(true);
-    try {
-      const cardData = {
-        user_id: user.id,
-        title: formData.title,
-        company: formData.company,
-        position: formData.profession,
-        phone: formData.phone,
-        email: formData.email,
-        website: formData.website,
-        avatar_url: formData.avatar_url,
-        bio: formData.tagline,
-        whatsapp: formData.whatsapp,
-        address: formData.address,
-        map_link: formData.map_link,
-        theme: formData.theme,
-        shape: formData.shape,
-        layout: formData.layout,
-        is_published: formData.is_published,
-        slug: formData.username || null,
-      };
+  const handleCustomThemeChange = (colorType: 'primary' | 'secondary' | 'background' | 'text', color: string) => {
+    setCustomTheme(true);
+    setFormData(prev => ({
+      ...prev,
+      theme: {
+        ...prev.theme,
+        [colorType]: color,
+        name: 'Custom Theme'
+      }
+    }));
+  };
 
-      await supabase.from("business_cards").update(cardData).eq("id", cardId);
-    } catch (error) {
-      console.error("Auto-save error:", error);
-    } finally {
-      setAutoSaving(false);
-    }
+  const handleLayoutChange = (layoutType: 'style' | 'alignment' | 'font', value: string) => {
+    setFormData(prev => ({
+      ...prev,
+      layout: {
+        ...prev.layout,
+        [layoutType]: value
+      }
+    }));
   };
 
   const handleSave = async () => {
@@ -361,1015 +349,838 @@ export const CardEditor: React.FC<CardEditorProps> = ({
         shape: formData.shape,
         layout: formData.layout,
         is_published: formData.is_published,
-        slug: formData.username || null,
+        slug: formData.username || undefined
       };
 
-      let result;
+      let cardId: string;
+
       if (existingCard) {
         // Update existing card
-        result = await supabase
-          .from("business_cards")
+        const { error } = await supabase
+          .from('business_cards')
           .update(cardData)
-          .eq("id", existingCard.id)
-          .select()
-          .single();
+          .eq('id', existingCard.id);
+
+        if (error) throw error;
+        cardId = existingCard.id;
       } else {
         // Create new card
-        result = await supabase
-          .from("business_cards")
+        const { data, error } = await supabase
+          .from('business_cards')
           .insert(cardData)
           .select()
           .single();
+
+        if (error) throw error;
+        cardId = data.id;
       }
 
-      if (result.error) {
-        console.error("Error saving card:", result.error);
-        alert("Failed to save card. Please try again.");
-        return;
+      // Save social links
+      if (socialLinks.length > 0) {
+        // Delete existing social links
+        await supabase
+          .from('social_links')
+          .delete()
+          .eq('card_id', cardId);
+
+        // Insert new social links
+        const { error: socialError } = await supabase
+          .from('social_links')
+          .insert(
+            socialLinks.map((link, index) => ({
+              card_id: cardId,
+              platform: link.platform,
+              username: link.username,
+              url: link.url,
+              display_order: index,
+              is_active: true
+            }))
+          );
+
+        if (socialError) throw socialError;
       }
+
       // Show success animation
-      setShowSuccessAnimation(true);
-      // Hide animation after 3 seconds and call onSave
+      setShowSuccess(true);
+      setShowConfetti(true);
+
+      // Hide success animation and call onSave after delay
       setTimeout(() => {
-        setShowSuccessAnimation(false);
+        setShowSuccess(false);
+        setShowConfetti(false);
         onSave();
       }, 3000);
+
     } catch (error) {
-      console.error("Error saving card:", error);
-      alert("Failed to save card. Please try again.");
+      console.error('Error saving card:', error);
+      alert('Failed to save card. Please try again.');
     } finally {
       setSaving(false);
     }
   };
 
-  const handleDuplicateCard = async () => {
-    if (!user || !existingCard) return;
-
-    setSaving(true);
-    try {
-      const { id, created_at, updated_at, slug, ...cardData } = existingCard;
-
-      const newCardData = {
-        ...cardData,
-        title: `${formData.title} (Copy)`,
-        is_published: false,
-        view_count: 0,
-        slug: null, // Let the system generate a new slug
-      };
-
-      const { data, error } = await supabase
-        .from("business_cards")
-        .insert(newCardData)
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error duplicating card:", error);
-        alert("Failed to duplicate card. Please try again.");
-        return;
-      }
-
-      // Redirect to edit the new card
-      window.location.href = `/user-admin?edit=${data.id}`;
-    } catch (error) {
-      console.error("Error duplicating card:", error);
-      alert("Failed to duplicate card. Please try again.");
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  const handleExportCard = () => {
-    const cardData = {
-      ...formData,
-      socialLinks,
-      mediaItems,
-      reviews,
-      exportedAt: new Date().toISOString(),
+  const addSocialLink = () => {
+    const newLink: Partial<SocialLink> = {
+      id: Date.now().toString(),
+      platform: 'Instagram',
+      username: '',
+      url: '',
+      display_order: socialLinks.length,
+      is_active: true
     };
-
-    const dataStr = JSON.stringify(cardData, null, 2);
-    const dataBlob = new Blob([dataStr], { type: "application/json" });
-    const url = URL.createObjectURL(dataBlob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = `${formData.username || "business-card"}-export.json`;
-    link.click();
-    URL.revokeObjectURL(url);
+    setSocialLinks([...socialLinks, newLink as SocialLink]);
   };
 
-  const handleImportCard = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+  const updateSocialLink = (index: number, field: keyof SocialLink, value: any) => {
+    const updatedLinks = [...socialLinks];
+    updatedLinks[index] = { ...updatedLinks[index], [field]: value };
 
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      try {
-        const importedData = JSON.parse(e.target?.result as string);
-
-        // Update form data with imported data
-        setFormData({
-          ...formData,
-          ...importedData,
-          username: importedData.username + "-imported", // Avoid slug conflicts
-        });
-
-        if (importedData.socialLinks) {
-          setSocialLinks(importedData.socialLinks);
-        }
-
-        alert("Card data imported successfully!");
-      } catch (error) {
-        alert("Invalid card data file. Please check the format.");
+    // Auto-generate URL when platform or username changes
+    if (field === 'platform' || field === 'username') {
+      const link = updatedLinks[index];
+      if (link.platform && link.username) {
+        link.url = generateSocialLink(link.platform, link.username);
       }
-    };
-    reader.readAsText(file);
-  };
-
-  const generateRandomTheme = () => {
-    const randomTheme = THEMES[Math.floor(Math.random() * THEMES.length)];
-    handleInputChange("theme", randomTheme);
-  };
-
-  const resetToDefaults = () => {
-    if (
-      confirm(
-        "Are you sure you want to reset all design settings to defaults? This cannot be undone."
-      )
-    ) {
-      handleInputChange("theme", THEMES[0]);
-      handleInputChange("shape", "rectangle");
-      handleInputChange("layout", LAYOUTS[0]);
     }
+
+    setSocialLinks(updatedLinks);
   };
 
-  const handleAutoSyncSocialLinks = async () => {
-    if (!cardId || !formData.username) return;
-
-    try {
-      // Generate auto-synced links
-      const autoSyncedLinks = generateAutoSyncedLinks(formData.username);
-
-      // Remove existing auto-synced links
-      await supabase
-        .from("social_links")
-        .delete()
-        .eq("card_id", cardId)
-        .eq("is_auto_synced", true);
-
-      // Insert new auto-synced links
-      const { data, error } = await supabase
-        .from("social_links")
-        .insert(
-          autoSyncedLinks.map((link, index) => ({
-            card_id: cardId,
-            platform: link.platform,
-            username: link.username,
-            url: link.url,
-            display_order: socialLinks.length + index,
-            is_active: true,
-            is_auto_synced: true,
-          }))
-        )
-        .select();
-
-      if (error) {
-        console.error("Error auto-syncing social links:", error);
-        alert("Failed to auto-sync social links. Please try again.");
-        return;
-      }
-
-      // Update local state
-      const newLinks = [...socialLinks, ...(data || [])];
-      setSocialLinks(newLinks);
-      setAutoSyncEnabled(true);
-
-      alert("Social links auto-synced successfully!");
-    } catch (error) {
-      console.error("Error auto-syncing social links:", error);
-      alert("Failed to auto-sync social links. Please try again.");
-    }
+  const removeSocialLink = (index: number) => {
+    setSocialLinks(socialLinks.filter((_, i) => i !== index));
   };
 
-  const handleUpdateSocialLink = async (
-    linkId: string,
-    newUsername: string
-  ) => {
-    try {
-      const link = socialLinks.find((l) => l.id === linkId);
-      if (!link) return;
-
-      const newUrl = generateSocialLink(link.platform, newUsername);
-
-      const { error } = await supabase
-        .from("social_links")
-        .update({
-          username: newUsername,
-          url: newUrl,
-          is_auto_synced: false, // Mark as custom when manually edited
-        })
-        .eq("id", linkId);x
-
-      if (error) {
-        console.error("Error updating social link:", error);
-        return;
-      }
-
-      // Update local state
-      const updatedLinks = socialLinks.map((l) =>
-        l.id === linkId
-          ? { ...l, username: newUsername, url: newUrl, is_auto_synced: false }
-          : l
-      );
-      setSocialLinks(updatedLinks);
-    } catch (error) {
-      console.error("Error updating social link:", error);
-    }
-  };
-
-  const addSocialLink = async (platform: string, username: string) => {
-    if (!cardId) return;
-
-    try {
-      const url = generateSocialLink(platform, username);
-      const { data, error } = await supabase
-        .from("social_links")
-        .insert({
-          card_id: cardId,
-          platform,
-          username,
-          url,
-          display_order: socialLinks.length,
-          is_active: true,
-          is_auto_synced: false,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error adding social link:", error);
-        return;
-      }
-
-      setSocialLinks([...socialLinks, data]);
-    } catch (error) {
-      console.error("Error adding social link:", error);
-    }
-  };
-
-  const removeSocialLink = async (linkId: string) => {
-    try {
-      const { error } = await supabase
-        .from("social_links")
-        .delete()
-        .eq("id", linkId);
-
-      if (error) {
-        console.error("Error removing social link:", error);
-        return;
-      }
-
-      setSocialLinks(socialLinks.filter((link) => link.id !== linkId));
-    } catch (error) {
-      console.error("Error removing social link:", error);
-    }
-  };
-
-  const tabs: Array<{
-    id: "basic" | "contact" | "social" | "media" | "products" | "reviews" | "design" | "advanced";
-    label: string;
-    icon: React.ElementType;
-  }> = [
-    { id: "basic", label: "Basic Info", icon: Type },
-    { id: "contact", label: "Contact", icon: Globe },
-    { id: "social", label: "Social Links", icon: Share2 },
-    { id: "media", label: "Media", icon: Layout },
-    { id: "products", label: "Products/Services", icon: Settings },
-    { id: "reviews", label: "Reviews", icon: Eye },
-    { id: "design", label: "Design", icon: Palette },
-    { id: "advanced", label: "Advanced", icon: Settings },
+  const tabs = [
+    { id: 'basic', label: 'Basic Info', icon: User },
+    { id: 'contact', label: 'Contact', icon: Phone },
+    { id: 'design', label: 'Design', icon: Palette },
+    { id: 'social', label: 'Social Links', icon: Link },
+    { id: 'media', label: 'Media', icon: Video },
+    { id: 'products', label: 'Products', icon: Star },
+    { id: 'reviews', label: 'Reviews', icon: MessageCircle }
   ];
 
-  const renderBasicInfo = () => (
-    <div className="space-y-6">
-      {/* Quick Actions */}
-      {/* <div className="bg-blue-50 rounded-lg p-4">
-        <h3 className="text-sm font-medium text-blue-900 mb-3">
-          Quick Actions
-        </h3>
-        <div className="flex flex-wrap gap-2">
-          <button
-            onClick={generateRandomTheme}
-            className="flex items-center gap-2 px-3 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-          >
-            <Sparkles className="w-4 h-4" />
-            Random Theme
-          </button>
-          {existingCard && (
-            <button
-              onClick={handleDuplicateCard}
-              className="flex items-center gap-2 px-3 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors text-sm"
-            >
-              <Copy className="w-4 h-4" />
-              Duplicate Card
-            </button>
-          )}
-          <button
-            onClick={handleExportCard}
-            className="flex items-center gap-2 px-3 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors text-sm"
-          >
-            <Download className="w-4 h-4" />
-            Export Data
-          </button>
-        </div>
-      </div> */}
-
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Profile Picture
-          </label>
-          <ImageUpload
-            currentImageUrl={formData.avatar_url}
-            onImageChange={(url) => handleInputChange("avatar_url", url || "")}
-            userId={user?.id || ""}
-          />
-        </div>
-        <div className="space-y-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Full Name *
-            </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => handleInputChange("title", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Enter your full name"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Card Username *
-            </label>
-            <div className="flex">
-              <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500 text-sm">
-                /c/
-              </span>
-              <input
-                type="text"
-                value={formData.username}
-                onChange={(e) =>
-                  handleInputChange(
-                    "username",
-                    e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, "")
-                  )
-                }
-                className="flex-1 px-3 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                placeholder="your-username"
-              />
-            </div>
-            <p className="text-xs text-gray-500 mt-1">
-              This will be your card's URL: /c/
-              {formData.username || "your-username"}
-            </p>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Company
-            </label>
-            <input
-              type="text"
-              value={formData.company}
-              onChange={(e) => handleInputChange("company", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Your company name"
-            />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Job Title/Profession
-            </label>
-            <input
-              type="text"
-              value={formData.profession}
-              onChange={(e) => handleInputChange("profession", e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="Your job title or profession"
-            />
-          </div>
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Bio/Tagline
-          </label>
-          <textarea
-            value={formData.tagline}
-            onChange={(e) => handleInputChange("tagline", e.target.value)}
-            rows={2}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Brief description about yourself or your business"
-          />
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderContactInfo = () => (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Email Address
-          </label>
-          <input
-            type="email"
-            value={formData.email}
-            onChange={(e) => handleInputChange("email", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="your@email.com"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Phone Number
-          </label>
-          <input
-            type="tel"
-            value={formData.phone}
-            onChange={(e) => handleInputChange("phone", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="+1 (555) 123-4567"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            WhatsApp Number
-          </label>
-          <input
-            type="tel"
-            value={formData.whatsapp}
-            onChange={(e) => handleInputChange("whatsapp", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="+1 (555) 123-4567"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Website
-          </label>
-          <input
-            type="url"
-            value={formData.website}
-            onChange={(e) => handleInputChange("website", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://yourwebsite.com"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Address
-          </label>
-          <textarea
-            value={formData.address}
-            onChange={(e) => handleInputChange("address", e.target.value)}
-            rows={1}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Your business or home address"
-          />
-        </div>
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Google Maps Link (Optional)
-          </label>
-          <input
-            type="url"
-            value={formData.map_link}
-            onChange={(e) => handleInputChange("map_link", e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="https://maps.google.com/..."
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            Link to your location on{" "}
-            <a
-              href="https://maps.google.com/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-blue-600 underline hover:text-blue-800"
-            >
-              Google Maps
-            </a>{" "}
-            for easy navigation
-          </p>
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderSocialLinks = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Social Media Links
-        </h3>
-
-        {/* Auto-Sync Section */}
-        {formData.username && (
-          <div className="bg-blue-50 rounded-lg p-4 mb-6">
-            <div className="flex items-center justify-between mb-3">
-              <div>
-                <h4 className="font-medium text-blue-900">
-                  Auto-Sync Social Links
-                </h4>
-                <p className="text-sm text-blue-700">
-                  Automatically create social links using your card username:{" "}
-                  <strong>@{formData.username}</strong>
-                </p>
-              </div>
-              <button
-                onClick={handleAutoSyncSocialLinks}
-                disabled={!cardId}
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-              >
-                <Sync className="w-4 h-4" />
-                Auto-Sync Links
-              </button>
-            </div>
-            <div className="text-xs text-blue-600">
-              This will create links for: Instagram, LinkedIn, GitHub, Twitter,
-              YouTube, Facebook, and more
-            </div>
-          </div>
-        )}
-
-        {/* Add Social Link Form */}
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
-          <SocialLinkForm onAdd={addSocialLink} />
-        </div>
-
-        {/* Existing Social Links */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-3">
-          {socialLinks.map((link) => (
-            <div
-              key={link.id}
-              className="flex items-center justify-between p-2 lg:p-4 bg-white border border-gray-200 rounded-lg"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-gray-100">
-                  <img
-                    src={getPlatformLogo(link.platform, link.url)}
-                    alt={`${link.platform} logo`}
-                    className="w-7 h-7"
-                  />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <p className="font-medium text-gray-900">{link.platform}</p>
-                    {/* {link.is_auto_synced && (
-                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 text-green-700 text-xs rounded-full">
-                        <Sync className="w-3 h-3" />
-                        Auto-synced
-                      </span>
-                    )} */}
-                  </div>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-gray-400">@</span>
-                    <input
-                      type="text"
-                      value={link.username || ""}
-                      onChange={(e) =>
-                        handleUpdateSocialLink(link.id, e.target.value)
-                      }
-                      className="lg:w-full w-[80%] text-sm text-gray-600 bg-transparent p-0 border-b border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500 rounded px-1"
-                      placeholder="username"
-                    />
-                  </div>
-                </div>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <a
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors border border-blue-200"
-                  title="Open link"
-                >
-                  <Globe className="w-4 h-4" />
-                </a>
-                <button
-                  onClick={() => removeSocialLink(link.id)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors border border-red-200"
-                  title="Remove link"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {socialLinks.length === 0 && (
-          <div className="text-center py-8 text-gray-500">
-            <Share2 className="w-12 h-12 mx-auto mb-3 text-gray-300" />
-            <p className="mb-2">No social links added yet</p>
-            {formData.username && (
-              <p className="text-sm text-blue-600">
-                Try the Auto-Sync feature above to quickly add links for @
-                {formData.username}
-              </p>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-
-  const renderDesign = () => (
-    <div className="space-y-8">
-      {/* Theme Selection with Color Shades */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Choose Theme</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-          {THEMES.map((theme) => (
-            <button
-              key={theme.name}
-              onClick={() => handleInputChange("theme", theme)}
-              className={`p-3 rounded-xl border-2 shadow-sm flex flex-col items-center transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-                formData.theme.name === theme.name
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-blue-300"
-              }`}
-              style={{ minWidth: 0 }}
-            >
-              <div className="flex gap-1 mb-2">
-                <span className="w-4 h-4 rounded-full border border-gray-200" style={{ background: theme.primary }} title="Primary" />
-                <span className="w-4 h-4 rounded-full border border-gray-200" style={{ background: theme.secondary }} title="Secondary" />
-                <span className="w-4 h-4 rounded-full border border-gray-200" style={{ background: theme.background }} title="Background" />
-                <span className="w-4 h-4 rounded-full border border-gray-200" style={{ background: theme.text }} title="Text" />
-              </div>
-              <p className="text-xs font-semibold text-gray-900 text-center whitespace-nowrap">{theme.name}</p>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Shape Selection - Mobile Friendly */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Card Shape</h3>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          {SHAPES.map((shape) => (
-            <button
-              key={shape.id}
-              onClick={() => handleInputChange("shape", shape.id)}
-              className={`p-3 rounded-xl border-2 flex flex-col items-center transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-                formData.shape === shape.id
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-blue-300"
-              }`}
-            >
-              <div className={`w-14 h-8 bg-gray-200 mb-2 ${shape.preview}`} />
-              <span className="text-xs font-medium text-gray-900 text-center">{shape.name}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {/* Layout Selection - Mobile Friendly */}
-      <div>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Layout Style</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {LAYOUTS.map((layout) => (
-            <button
-              key={layout.name}
-              onClick={() => handleInputChange("layout", layout)}
-              className={`p-3 rounded-xl border-2 text-left flex flex-col transition-all focus:outline-none focus:ring-2 focus:ring-blue-400 ${
-                formData.layout.name === layout.name
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-blue-300"
-              }`}
-            >
-              <span className="font-medium text-gray-900">{layout.name}</span>
-              <span className="text-xs text-gray-500">{layout.style} • {layout.alignment} • {layout.font}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-
-  const renderAdvanced = () => (
-    <div className="space-y-8">
-      {/* Import/Export */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Import/Export
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <h4 className="font-medium text-gray-900 mb-2">Export Card Data</h4>
-            <p className="text-sm text-gray-600 mb-4">
-              Download your card data as a JSON file for backup or transfer.
-            </p>
-            <button
-              onClick={handleExportCard}
-              className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-            >
-              <Download className="w-4 h-4" />
-              Export Card Data
-            </button>
-          </div>
-          <div>
-            <h4 className="font-medium text-gray-900 mb-2">Import Card Data</h4>
-            <p className="text-sm text-gray-600 mb-4">
-              Upload a previously exported card data file.
-            </p>
-            <input
-              type="file"
-              accept=".json"
-              onChange={handleImportCard}
-              className="hidden"
-              id="import-card"
-            />
-            <label
-              htmlFor="import-card"
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors cursor-pointer"
-            >
-              <Upload className="w-4 h-4" />
-              Import Card Data
-            </label>
-          </div>
-        </div>
-      </div>
-
-      {/* Advanced Settings */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">
-          Advanced Settings
-        </h3>
-        <div className="space-y-4">
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div>
-              <h4 className="font-medium text-gray-900">Auto-save</h4>
-              <p className="text-sm text-gray-600">
-                Automatically save changes as you type
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              {autoSaving && (
-                <div className="flex items-center gap-2 text-blue-600">
-                  <RefreshCw className="w-4 h-4 animate-spin" />
-                  <span className="text-sm">Saving...</span>
-                </div>
-              )}
-              <span className="text-sm text-green-600">Enabled</span>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-            <div>
-              <h4 className="font-medium text-gray-900">Card Analytics</h4>
-              <p className="text-sm text-gray-600">
-                Track views and interactions on your card
-              </p>
-            </div>
-            <span className="text-sm text-green-600">Enabled</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Danger Zone */}
-      {existingCard && (
-        <div className="bg-white rounded-xl shadow-sm border border-red-200 p-6">
-          <h3 className="text-lg font-semibold text-red-900 mb-4">
-            Danger Zone
-          </h3>
-          <div className="space-y-4">
-            <div className="p-4 border border-red-200 rounded-lg bg-red-50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <h4 className="font-medium text-red-600">Delete Card</h4>
-                  <p className="text-sm text-red-500">
-                    Permanently delete this card and all its data
-                  </p>
-                </div>
-                <button
-                  onClick={() => {
-                    if (
-                      confirm(
-                        "Are you sure you want to delete this card? This action cannot be undone."
-                      )
-                    ) {
-                      // Handle delete logic here
-                      onCancel();
-                    }
-                  }}
-                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+  if (showSuccess) {
+    return (
+      <>
+        <SuccessAnimation />
+        <ConfettiSideCannons trigger={showConfetti} />
+      </>
+    );
+  }
 
   return (
-    <>
-      {/* Success Animation Overlay */}
-      {showSuccessAnimation && <SuccessAnimation />}
-      {/* Confetti Side Cannons Animation */}
-      {/* <ConfettiSideCannons trigger={showConfettiCannons} /> */}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 py-8 px-4">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onCancel}
+              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
+            >
+              <ArrowLeft className="w-6 h-6" />
+            </button>
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900">
+                {existingCard ? 'Edit Business Card' : 'Create New Business Card'}
+              </h1>
+              <p className="text-gray-600">
+                {existingCard ? 'Update your card information' : 'Build your professional digital presence'}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2">
+              <input
+                type="checkbox"
+                checked={formData.is_published}
+                onChange={(e) => handleInputChange('is_published', e.target.checked)}
+                className="rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+              />
+              <span className="text-sm font-medium text-gray-700">Published</span>
+            </label>
+            <button
+              onClick={handleSave}
+              disabled={saving || !formData.title}
+              className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              {saving ? (
+                <Loader2 className="w-5 h-5 animate-spin" />
+              ) : (
+                <Save className="w-5 h-5" />
+              )}
+              {saving ? 'Saving...' : 'Save Card'}
+            </button>
+          </div>
+        </div>
 
-      <div className="mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Editor Panel */}
+          {/* Left Column - Form */}
           <div className="lg:col-span-2">
-            <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-2xl shadow-lg border-2 border-blue-100 overflow-hidden">
-              {/* Header */}
-              <div className="border-b-2 border-blue-100 p-6 bg-gradient-to-r from-blue-50 via-white to-purple-50">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <h2 className="text-lg lg:text-xl font-extrabold text-blue-900 tracking-tight drop-shadow-sm" style={{ fontFamily: "'Montserrat', 'Segoe UI', sans-serif" }}>
-                      {existingCard ? "Edit Business Card" : "Create New Business Card"}
-                    </h2>
-                    <p className="text-base text-gray-600">
-                      {existingCard ? "Update your card information" : "Fill in your details to create your digital business card"}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-2">
+            {/* Tab Navigation */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 mb-6">
+              <div className="flex overflow-x-auto">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  return (
                     <button
-                      onClick={handleSave}
-                      disabled={saving || !formData.title || !formData.username}
-                      className="flex items-center gap-2 px-3 lg:px-6 py-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-xs lg:text-base text-white rounded-xl shadow-md hover:from-blue-600 hover:to-pink-600 hover:scale-105 transition-all font-semibold border-2 border-blue-400 disabled:opacity-50 disabled:cursor-not-allowed"
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id as any)}
+                      className={`flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors ${
+                        activeTab === tab.id
+                          ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
+                          : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                      }`}
                     >
-                      {saving ? (
-                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Save className="w-5 h-5" />
-                      )}
-                      {saving ? "Saving..." : "Save Card"}
+                      <Icon className="w-4 h-4" />
+                      {tab.label}
                     </button>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Tab Content */}
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+              {/* Basic Information Tab */}
+              {activeTab === 'basic' && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Basic Information</h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Full Name *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.title}
+                        onChange={(e) => handleInputChange('title', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Your full name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Username *
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.username}
+                        onChange={(e) => handleInputChange('username', e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="your-username"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        This will be your card URL: /c/{formData.username || 'your-username'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Company
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.company}
+                        onChange={(e) => handleInputChange('company', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Your company name"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Job Title
+                      </label>
+                      <input
+                        type="text"
+                        value={formData.profession}
+                        onChange={(e) => handleInputChange('profession', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="Your job title"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Tagline
+                    </label>
+                    <textarea
+                      value={formData.tagline}
+                      onChange={(e) => handleInputChange('tagline', e.target.value)}
+                      rows={3}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="A brief description about yourself or your business"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Profile Picture
+                    </label>
+                    {user && (
+                      <ImageUpload
+                        currentImageUrl={formData.avatar_url}
+                        onImageChange={(url) => handleInputChange('avatar_url', url || '')}
+                        userId={user.id}
+                      />
+                    )}
                   </div>
                 </div>
-              </div>
+              )}
 
-              {/* Tabs */}
-              <div className="border-b-2 border-blue-100 bg-gradient-to-r from-blue-50 via-white to-purple-50">
-                <nav className="flex overflow-x-auto">
-                  {tabs.map((tab) => {
-                    const Icon = tab.icon;
-                    return (
+              {/* Contact Information Tab */}
+              {activeTab === 'contact' && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Contact Information</h2>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <Mail className="w-4 h-4 inline mr-2" />
+                        Email
+                      </label>
+                      <input
+                        type="email"
+                        value={formData.email}
+                        onChange={(e) => handleInputChange('email', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="your@email.com"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <Phone className="w-4 h-4 inline mr-2" />
+                        Phone
+                      </label>
+                      <input
+                        type="tel"
+                        value={formData.phone}
+                        onChange={(e) => handleInputChange('phone', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="+1 (555) 123-4567"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <MessageCircle className="w-4 h-4 inline mr-2" />
+                        WhatsApp
+                      </label>
+                      <input
+                        type="tel"
+                        value={formData.whatsapp}
+                        onChange={(e) => handleInputChange('whatsapp', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="+1 (555) 123-4567"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        <Globe className="w-4 h-4 inline mr-2" />
+                        Website
+                      </label>
+                      <input
+                        type="url"
+                        value={formData.website}
+                        onChange={(e) => handleInputChange('website', e.target.value)}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="https://yourwebsite.com"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      <MapPin className="w-4 h-4 inline mr-2" />
+                      Address
+                    </label>
+                    <textarea
+                      value={formData.address}
+                      onChange={(e) => handleInputChange('address', e.target.value)}
+                      rows={2}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="Your business address"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Google Maps Link
+                    </label>
+                    <input
+                      type="url"
+                      value={formData.map_link}
+                      onChange={(e) => handleInputChange('map_link', e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      placeholder="https://maps.google.com/..."
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Optional: Link to your location on Google Maps
+                    </p>
+                  </div>
+                </div>
+              )}
+
+              {/* Design Tab */}
+              {activeTab === 'design' && (
+                <div className="space-y-8">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-4">Design & Appearance</h2>
+                  </div>
+
+                  {/* Choose Theme Section */}
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                      <Palette className="w-5 h-5" />
+                      Choose Theme
+                    </h3>
+                    
+                    {/* Theme Toggle */}
+                    <div className="flex items-center gap-4 mb-6">
                       <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id)}
-                        className={`flex items-center gap-2 px-3 lg:px-4 py-3 text-sm lg:text-base font-semibold whitespace-nowrap border-b-4 transition-all ${
-                          activeTab === tab.id
-                            ? "border-blue-500 text-blue-700 bg-blue-100 shadow"
-                            : "border-transparent text-gray-500 hover:text-blue-700 hover:bg-blue-50"
+                        onClick={() => setCustomTheme(false)}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                          !customTheme 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                         }`}
-                        type="button"
-                        aria-current={activeTab === tab.id ? "page" : undefined}
-                        style={{ fontFamily: "'Montserrat', 'Segoe UI', sans-serif" }}
                       >
-                        <Icon className="w-4 h-4 lg:w-5 lg:h-5" />
-                        {tab.label}
+                        Predefined Themes
                       </button>
-                    );
-                  })}
-                </nav>
-              </div>
+                      <button
+                        onClick={() => setCustomTheme(true)}
+                        className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                          customTheme 
+                            ? 'bg-blue-600 text-white' 
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}
+                      >
+                        Custom Colors
+                      </button>
+                    </div>
 
-              {/* Tab Content */}
-              <div className="p-4 md:p-8 bg-gradient-to-br from-blue-50 via-white to-purple-50 min-h-[400px]">
-                {activeTab === "basic" && renderBasicInfo()}
-                {activeTab === "contact" && renderContactInfo()}
-                {activeTab === "social" && renderSocialLinks()}
-                {activeTab === "media" && cardId && (
+                    {/* Predefined Themes */}
+                    {!customTheme && (
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                        {PREDEFINED_THEMES.map((theme) => (
+                          <button
+                            key={theme.name}
+                            onClick={() => handleThemeChange(theme)}
+                            className={`p-4 rounded-xl border-2 transition-all hover:scale-105 ${
+                              formData.theme.name === theme.name
+                                ? 'border-blue-500 ring-2 ring-blue-200'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div className="flex items-center gap-3 mb-2">
+                              <div
+                                className="w-6 h-6 rounded-full border-2 border-white shadow"
+                                style={{ backgroundColor: theme.primary }}
+                              />
+                              <div
+                                className="w-6 h-6 rounded-full border-2 border-white shadow"
+                                style={{ backgroundColor: theme.secondary }}
+                              />
+                            </div>
+                            <div className="text-left">
+                              <p className="font-medium text-gray-900">{theme.name}</p>
+                              <div className="flex gap-1 mt-1">
+                                <div
+                                  className="w-3 h-3 rounded"
+                                  style={{ backgroundColor: theme.background }}
+                                />
+                                <div
+                                  className="w-3 h-3 rounded"
+                                  style={{ backgroundColor: theme.text }}
+                                />
+                              </div>
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    )}
+
+                    {/* Custom Color Picker */}
+                    {customTheme && (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Primary Color
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="color"
+                              value={formData.theme.primary}
+                              onChange={(e) => handleCustomThemeChange('primary', e.target.value)}
+                              className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              value={formData.theme.primary}
+                              onChange={(e) => handleCustomThemeChange('primary', e.target.value)}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono"
+                              placeholder="#3B82F6"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Secondary Color
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="color"
+                              value={formData.theme.secondary}
+                              onChange={(e) => handleCustomThemeChange('secondary', e.target.value)}
+                              className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              value={formData.theme.secondary}
+                              onChange={(e) => handleCustomThemeChange('secondary', e.target.value)}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono"
+                              placeholder="#1E40AF"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Background Color
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="color"
+                              value={formData.theme.background}
+                              onChange={(e) => handleCustomThemeChange('background', e.target.value)}
+                              className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              value={formData.theme.background}
+                              onChange={(e) => handleCustomThemeChange('background', e.target.value)}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono"
+                              placeholder="#FFFFFF"
+                            />
+                          </div>
+                        </div>
+
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-2">
+                            Text Color
+                          </label>
+                          <div className="flex items-center gap-3">
+                            <input
+                              type="color"
+                              value={formData.theme.text}
+                              onChange={(e) => handleCustomThemeChange('text', e.target.value)}
+                              className="w-12 h-12 rounded-lg border border-gray-300 cursor-pointer"
+                            />
+                            <input
+                              type="text"
+                              value={formData.theme.text}
+                              onChange={(e) => handleCustomThemeChange('text', e.target.value)}
+                              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm font-mono"
+                              placeholder="#1F2937"
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Layout Style Section */}
+                  <div>
+                    <h3 className="text-lg font-medium text-gray-900 mb-4 flex items-center gap-2">
+                      <Layout className="w-5 h-5" />
+                      Layout Style
+                    </h3>
+
+                    {/* Style Options */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Card Style
+                      </label>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {LAYOUT_STYLES.map((style) => (
+                          <button
+                            key={style.id}
+                            onClick={() => handleLayoutChange('style', style.id)}
+                            className={`p-4 rounded-xl border-2 text-left transition-all hover:scale-105 ${
+                              formData.layout.style === style.id
+                                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                          >
+                            <div className="font-medium text-gray-900 mb-1">{style.name}</div>
+                            <div className="text-xs text-gray-600">{style.description}</div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Alignment Options */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Content Alignment
+                      </label>
+                      <div className="flex gap-4">
+                        <button
+                          onClick={() => handleLayoutChange('alignment', 'left')}
+                          className={`flex items-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${
+                            formData.layout.alignment === 'left'
+                              ? 'border-blue-500 bg-blue-50 text-blue-700'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <AlignLeft className="w-5 h-5" />
+                          <span className="font-medium">Left</span>
+                        </button>
+                        <button
+                          onClick={() => handleLayoutChange('alignment', 'center')}
+                          className={`flex items-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${
+                            formData.layout.alignment === 'center'
+                              ? 'border-blue-500 bg-blue-50 text-blue-700'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <AlignCenter className="w-5 h-5" />
+                          <span className="font-medium">Center</span>
+                        </button>
+                        <button
+                          onClick={() => handleLayoutChange('alignment', 'right')}
+                          className={`flex items-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${
+                            formData.layout.alignment === 'right'
+                              ? 'border-blue-500 bg-blue-50 text-blue-700'
+                              : 'border-gray-200 hover:border-gray-300'
+                          }`}
+                        >
+                          <AlignRight className="w-5 h-5" />
+                          <span className="font-medium">Right</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    {/* Font Options */}
+                    <div className="mb-6">
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        <Type className="w-4 h-4 inline mr-2" />
+                        Font Family
+                      </label>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        {FONT_OPTIONS.map((font) => (
+                          <button
+                            key={font.id}
+                            onClick={() => handleLayoutChange('font', font.id)}
+                            className={`p-4 rounded-xl border-2 text-left transition-all hover:scale-105 ${
+                              formData.layout.font === font.id
+                                ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200'
+                                : 'border-gray-200 hover:border-gray-300'
+                            }`}
+                            style={{ fontFamily: font.id }}
+                          >
+                            <div className="font-medium text-gray-900 mb-1">{font.name}</div>
+                            <div className="text-xs text-gray-600">{font.description}</div>
+                            <div className="text-sm mt-2" style={{ fontFamily: font.id }}>
+                              Sample Text 123
+                            </div>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Card Shape */}
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Card Shape
+                      </label>
+                      <div className="flex gap-4">
+                        {SHAPE_OPTIONS.map((shape) => {
+                          const Icon = shape.icon;
+                          return (
+                            <button
+                              key={shape.id}
+                              onClick={() => handleInputChange('shape', shape.id)}
+                              className={`flex items-center gap-2 px-4 py-3 rounded-lg border-2 transition-all ${
+                                formData.shape === shape.id
+                                  ? 'border-blue-500 bg-blue-50 text-blue-700'
+                                  : 'border-gray-200 hover:border-gray-300'
+                              }`}
+                            >
+                              <Icon className="w-5 h-5" />
+                              <span className="font-medium">{shape.name}</span>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Social Links Tab */}
+              {activeTab === 'social' && (
+                <div className="space-y-6">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h2 className="text-xl font-semibold text-gray-900 mb-2">Social Media Links</h2>
+                      <p className="text-gray-600">Add your social media profiles and links</p>
+                    </div>
+                    <button
+                      onClick={addSocialLink}
+                      className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                      <Plus className="w-4 h-4" />
+                      Add Link
+                    </button>
+                  </div>
+
+                  {socialLinks.length > 0 ? (
+                    <div className="space-y-4">
+                      {socialLinks.map((link, index) => (
+                        <div key={link.id || index} className="p-4 border border-gray-200 rounded-lg">
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Platform
+                              </label>
+                              <select
+                                value={link.platform}
+                                onChange={(e) => updateSocialLink(index, 'platform', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              >
+                                {Object.keys(SOCIAL_PLATFORMS).map((platform) => (
+                                  <option key={platform} value={platform}>
+                                    {platform}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+
+                            <div>
+                              <label className="block text-sm font-medium text-gray-700 mb-1">
+                                Username/Handle
+                              </label>
+                              <input
+                                type="text"
+                                value={link.username || ''}
+                                onChange={(e) => updateSocialLink(index, 'username', e.target.value)}
+                                className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                placeholder={SOCIAL_PLATFORMS[link.platform]?.placeholder || 'username'}
+                              />
+                            </div>
+
+                            <div className="flex items-end gap-2">
+                              <div className="flex-1">
+                                <label className="block text-sm font-medium text-gray-700 mb-1">
+                                  URL
+                                </label>
+                                <input
+                                  type="url"
+                                  value={link.url}
+                                  onChange={(e) => updateSocialLink(index, 'url', e.target.value)}
+                                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="https://..."
+                                />
+                              </div>
+                              <button
+                                onClick={() => removeSocialLink(index)}
+                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-12 bg-gray-50 rounded-lg">
+                      <Link className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">No Social Links</h3>
+                      <p className="text-gray-600 mb-4">
+                        Add your social media profiles to help people connect with you.
+                      </p>
+                      <button
+                        onClick={addSocialLink}
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                      >
+                        <Plus className="w-5 h-5" />
+                        Add Your First Social Link
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Media Tab */}
+              {activeTab === 'media' && existingCard && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">Media Gallery</h2>
+                    <p className="text-gray-600">Add videos, images, and documents to showcase your work</p>
+                  </div>
                   <MediaUpload
-                    cardId={cardId}
+                    cardId={existingCard.id}
                     mediaItems={mediaItems}
                     onMediaChange={setMediaItems}
-                    userId={user?.id || ""}
+                    userId={user?.id || ''}
                   />
-                )}
-                {activeTab === "products" && cardId && (
+                </div>
+              )}
+
+              {/* Products Tab */}
+              {activeTab === 'products' && existingCard && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">Products & Services</h2>
+                    <p className="text-gray-600">Showcase your products and services with rich descriptions</p>
+                  </div>
                   <ProductsServicesManager
-                    cardId={cardId}
+                    cardId={existingCard.id}
                     products={products}
                     onProductsChange={setProducts}
-                    userId={user?.id || ""}
+                    userId={user?.id || ''}
                   />
-                )}
-                {activeTab === "reviews" && cardId && (
+                </div>
+              )}
+
+              {/* Reviews Tab */}
+              {activeTab === 'reviews' && existingCard && (
+                <div className="space-y-6">
+                  <div>
+                    <h2 className="text-xl font-semibold text-gray-900 mb-2">Customer Reviews</h2>
+                    <p className="text-gray-600">Add links to your reviews and testimonials</p>
+                  </div>
                   <ReviewsManager
-                    cardId={cardId}
+                    cardId={existingCard.id}
                     reviews={reviews}
                     onReviewsChange={setReviews}
                   />
-                )}
-                {activeTab === "design" && renderDesign()}
-                {activeTab === "advanced" && renderAdvanced()}
-              </div>
-
-              {/* Actions */}
-              <div className="border-t-2 border-blue-100 p-4 flex justify-between bg-gradient-to-r from-blue-50 via-white to-purple-50">
-                <button
-                  onClick={() => {
-                    const currentIndex = tabs.findIndex(
-                      (tab) => tab.id === activeTab
-                    );
-                    if (currentIndex > 0) {
-                      setActiveTab(tabs[currentIndex - 1].id);
-                    }
-                  }}
-                  className="flex items-center gap-2 px-6 py-2 bg-gray-100 text-gray-700 rounded-xl hover:bg-gray-200 transition-all font-semibold border border-gray-200"
-                  disabled={activeTab === tabs[0].id}
-                  type="button"
-                >
-                  <ArrowLeft className="w-4 h-4" />
-                  Previous
-                </button>
-                <button
-                  onClick={() => {
-                    const currentIndex = tabs.findIndex(
-                      (tab) => tab.id === activeTab
-                    );
-                    if (currentIndex < tabs.length - 1) {
-                      setActiveTab(tabs[currentIndex + 1].id);
-                    }
-                  }}
-                  className="flex items-center gap-2 px-6 py-2 bg-gradient-to-r from-blue-500 via-purple-500 to-pink-500 text-white rounded-xl hover:from-blue-600 hover:to-pink-600 transition-all font-semibold border-2 border-blue-400"
-                  disabled={activeTab === tabs[tabs.length - 1].id}
-                  type="button"
-                >
-                  Next
-                  <ArrowRight className="w-4 h-4" />
-                </button>
-              </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Preview Panel */}
+          {/* Right Column - Preview */}
           <div className="lg:col-span-1">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 border-b-2 border-blue-100 mb-4">
-              <div>
-                <div className="flex items-center gap-2 pb-0 lg:pl-0 pl-[50%] mb-4">
-                  {autoSaving && (
-                    <div className="flex items-center gap-2 text-blue-600">
-                      <RefreshCw className="w-4 h-4 animate-spin" />
-                      <span className="text-sm">Auto-saving...</span>
-                    </div>
-                  )}
-                  <div className="flex items-center gap-2">
-                    {formData.is_published ? (
-                      <Lock className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <Globe className="w-5 h-5 text-gray-400" />
-                    )}
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          handleInputChange(
-                            "is_published",
-                            !formData.is_published
-                          )
-                        }
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none ${
-                          formData.is_published ? "bg-green-500" : "bg-gray-300"
-                        }`}
-                        aria-pressed={formData.is_published ? "true" : "false"}
-                      >
-                        <span
-                          className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${
-                            formData.is_published
-                              ? "translate-x-5"
-                              : "translate-x-1"
-                          }`}
-                        />
-                      </button>
-                      <span className="text-base lg:text-xl font-medium text-gray-700">
-                        {formData.is_published ? "Published" : "Draft"}
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="sticky top-6">
+            <div className="sticky top-8">
               <CardPreview
                 formData={formData}
                 socialLinks={socialLinks}
@@ -1381,71 +1192,6 @@ export const CardEditor: React.FC<CardEditorProps> = ({
           </div>
         </div>
       </div>
-    </>
-  );
-};
-
-// Social Link Form Component
-const SocialLinkForm: React.FC<{
-  onAdd: (platform: string, username: string) => void;
-}> = ({ onAdd }) => {
-  const [platform, setPlatform] = useState("");
-  const [username, setUsername] = useState("");
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (platform && username) {
-      onAdd(platform, username);
-      setPlatform("");
-      setUsername("");
-    }
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Platform
-          </label>
-          <select
-            value={platform}
-            onChange={(e) => setPlatform(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            aria-label="Platform"
-          >
-            <option value="">Select platform</option>
-            {Object.keys(SOCIAL_PLATFORMS).map((platformName) => (
-              <option key={platformName} value={platformName}>
-                {platformName}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Username/URL
-          </label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder={
-              platform
-                ? SOCIAL_PLATFORMS[platform]?.placeholder
-                : "Enter username or URL"
-            }
-          />
-        </div>
-      </div>
-      <button
-        type="submit"
-        disabled={!platform || !username}
-        className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-      >
-        Add Social Link
-      </button>
-    </form>
+    </div>
   );
 };
