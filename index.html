@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link
+      rel="icon"
+      type="image/png"
+      href="/DBCLOGO_2.png"
+    />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Dynamic Meta Tags Script -->
+    <script>
+      // Function to set dynamic meta tags based on URL
+      function setDynamicMetaTags() {
+        const path = window.location.pathname;
+        const isCardPage = path.startsWith("/c/");
+
+        if (isCardPage) {
+          // Extract card slug from URL
+          const cardSlug = path.split("/c/")[1];
+
+          // Fetch card data and update meta tags
+          fetchCardDataAndUpdateMeta(cardSlug);
+        } else {
+          // Set default meta tags for main page
+          setDefaultMetaTags();
+        }
+      }
+
+      async function fetchCardDataAndUpdateMeta(cardSlug) {
+        try {
+          // This will be populated by the PublicCard component
+          // For now, set loading state
+          updateMetaTags({
+            title: "Loading Digital Business Card...",
+            description: "Loading business card information...",
+            image:
+              "/DBCLOGO_2.png",
+            url: window.location.href,
+          });
+        } catch (error) {
+          console.error("Error fetching card data:", error);
+          setDefaultMetaTags();
+        }
+      }
+
+      function setDefaultMetaTags() {
+        updateMetaTags({
+          title: "Digital Business Card Builder - SCC Infotech LLP",
+          description:
+            "Create, manage, and share your digital business card with SCC Infotech LLP's AI-powered platform. Build professional digital business cards in minutes.",
+          image:
+            "/DBCLOGO_2.png",
+          url: window.location.origin,
+          author: "SCC Infotech LLP",
+        });
+      }
+
+      function updateMetaTags(data) {
+        // Update title
+        document.title = data.title;
+
+        // Update or create meta tags
+        updateMetaTag("description", data.description);
+        updateMetaTag("author", data.author || "SCC Infotech LLP");
+        updateMetaTag("theme-color", "#3b82f6");
+
+        // Open Graph tags
+        updateMetaProperty("og:title", data.title);
+        updateMetaProperty("og:description", data.description);
+        updateMetaProperty("og:image", data.image);
+        updateMetaProperty("og:url", data.url);
+        updateMetaProperty("og:type", "website");
+        updateMetaProperty("og:site_name", "Digital Business Card Builder");
+
+        // Twitter tags
+        updateMetaName("twitter:card", "summary_large_image");
+        updateMetaName("twitter:title", data.title);
+        updateMetaName("twitter:description", data.description);
+        updateMetaName("twitter:image", data.image);
+        updateMetaName("twitter:site", "@sccinfotech");
+
+        // Additional meta tags for business cards
+        if (data.name) {
+          updateMetaProperty(
+            "profile:first_name",
+            data.name.split(" ")[0] || ""
+          );
+          updateMetaProperty(
+            "profile:last_name",
+            data.name.split(" ").slice(1).join(" ") || ""
+          );
+        }
+
+        if (data.company) {
+          updateMetaProperty(
+            "business:contact_data:company_name",
+            data.company
+          );
+        }
+
+        if (data.profession) {
+          updateMetaProperty(
+            "business:contact_data:job_title",
+            data.profession
+          );
+        }
+      }
+
+      function updateMetaTag(name, content) {
+        let meta = document.querySelector(`meta[name="${name}"]`);
+        if (!meta) {
+          meta = document.createElement("meta");
+          meta.setAttribute("name", name);
+          document.head.appendChild(meta);
+        }
+        meta.setAttribute("content", content);
+      }
+
+      function updateMetaProperty(property, content) {
+        let meta = document.querySelector(`meta[property="${property}"]`);
+        if (!meta) {
+          meta = document.createElement("meta");
+          meta.setAttribute("property", property);
+          document.head.appendChild(meta);
+        }
+        meta.setAttribute("content", content);
+      }
+
+      function updateMetaName(name, content) {
+        let meta = document.querySelector(`meta[name="${name}"]`);
+        if (!meta) {
+          meta = document.createElement("meta");
+          meta.setAttribute("name", name);
+          document.head.appendChild(meta);
+        }
+        meta.setAttribute("content", content);
+      }
+
+      // Global function to update card meta tags (called by PublicCard component)
+      window.updateCardMetaTags = function (cardData) {
+        const metaData = {
+          title: `${cardData.name || "Digital Business Card"} - ${
+            cardData.company || "Professional"
+          }`,
+          description: `${
+            cardData.bio ||
+            `Connect with ${cardData.name || "this professional"}`
+          }${cardData.profession ? ` - ${cardData.profession}` : ""}${
+            cardData.company ? ` at ${cardData.company}` : ""
+          }`,
+          image:
+            cardData.avatar ||
+            "/DBCLOGO_2.png",
+          url: window.location.href,
+          name: cardData.name,
+          company: cardData.company,
+          profession: cardData.profession,
+        };
+
+        updateMetaTags(metaData);
+      };
+
+      // Set initial meta tags when page loads
+      document.addEventListener("DOMContentLoaded", setDynamicMetaTags);
+    </script>
+
+    <!-- Default Meta Tags (will be updated dynamically) -->
+    <title>Digital Business Card Builder - SCC Infotech LLP</title>
+    <meta
+      name="description"
+      content="Create, manage, and share your digital business card with SCC Infotech LLP's AI-powered platform. Build professional digital business cards in minutes."
+    />
+    <meta
+      name="keywords"
+      content="digital business card, SCC Infotech, AI, card builder, online business card, share card, professional networking, business networking"
+    />
+    <meta name="author" content="SCC Infotech LLP" />
+    <meta name="theme-color" content="#3b82f6" />
+
+    <!-- Open Graph / Facebook -->
+    <meta
+      property="og:title"
+      content="Digital Business Card Builder - SCC Infotech LLP"
+    />
+    <meta
+      property="og:description"
+      content="Create, manage, and share your digital business card with SCC Infotech LLP's AI-powered platform. Build professional digital business cards in minutes."
+    />
+    <meta
+      property="og:image"
+      content="/DBCLOGO_2.png"
+    />
+    <meta property="og:url" content="https://dbc.sccinfotech.com" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Digital Business Card Builder" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Digital Business Card Builder - SCC Infotech LLP"
+    />
+    <meta
+      name="twitter:description"
+      content="Create, manage, and share your digital business card with SCC Infotech LLP's AI-powered platform. Build professional digital business cards in minutes."
+    />
+    <meta
+      name="twitter:image"
+      content="/DBCLOGO_2.png"
+    />
+    <meta name="twitter:site" content="@sccinfotech" />
+
+    <!-- Additional SEO Meta Tags -->
+    <meta name="robots" content="index, follow" />
+    <meta name="googlebot" content="index, follow" />
+    <meta name="language" content="English" />
+    <meta name="revisit-after" content="7 days" />
+    <meta name="distribution" content="global" />
+    <meta name="rating" content="general" />
+
+    <!-- Business/Contact Schema -->
+    <meta property="business:contact_data:street_address" content="" />
+    <meta property="business:contact_data:locality" content="" />
+    <meta property="business:contact_data:region" content="" />
+    <meta property="business:contact_data:postal_code" content="" />
+    <meta property="business:contact_data:country_name" content="" />
+    <meta
+      property="business:contact_data:email"
+      content="contact@sccinfotech.com"
+    />
+    <meta property="business:contact_data:phone_number" content="" />
+    <meta
+      property="business:contact_data:website"
+      content="https://sccinfotech.com"
+    />
+
+    <!-- Structured Data for Organization -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Organization",
+        "name": "SCC Infotech LLP",
+        "url": "https://sccinfotech.com",
+  "logo": "/DBCLOGO_2.png",
+        "description": "Leading software development and IT services company specializing in digital business solutions",
+        "contactPoint": {
+          "@type": "ContactPoint",
+          "contactType": "customer service",
+          "email": "contact@sccinfotech.com"
+        },
+        "sameAs": [
+          "https://linkedin.com/company/scc-infotech",
+          "https://facebook.com/sccinfotech",
+          "https://twitter.com/sccinfotech"
+        ]
+      }
+    </script>
+
+    <!-- Fonts -->
+    <!-- font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montez&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Just+Another+Hand&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rancho&display=swap"
+      rel="stylesheet"
+    />
+
+    <!-- Preconnect for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://github.com" />
+
+    <!-- DNS Prefetch for external resources -->
+    <link rel="dns-prefetch" href="//api.qrserver.com" />
+    <link rel="dns-prefetch" href="//img.youtube.com" />
+    <link rel="dns-prefetch" href="//www.google.com" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <!-- Default Title & Description -->
+    <title>Digital Business Card Builder - SCC Infotech LLP</title>
+    <meta
+      name="description"
+      content="Create, manage, and share your digital business card with SCC Infotech LLP's AI-powered platform."
+    />
+
+    <!-- Default Open Graph Tags -->
+    <meta
+      property="og:title"
+      content="Digital Business Card Builder - SCC Infotech LLP"
+    />
+    <meta
+      property="og:description"
+      content="AI-powered platform for creating and sharing professional digital business cards."
+    />
+    <meta
+      property="og:image"
+      content="https://businesscardsscc.vercel.app/DBCLOGO_2.png"
+    />
+    <meta
+      property="og:url"
+      content="https://businesscardsscc.vercel.app"
+    />
+    <meta property="og:type" content="website" />
+
+    <!-- Default Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta
+      name="twitter:title"
+      content="Digital Business Card Builder - SCC Infotech LLP"
+    />
+    <meta
+      name="twitter:description"
+      content="AI-powered platform for creating and sharing professional digital business cards."
+    />
+    <meta
+      name="twitter:image"
+      content="https://businesscardsscc.vercel.app/DBCLOGO_2.png"
+    />
+
+
+       <!-- Fonts -->
+    <!-- font -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;500;700;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montez&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Just+Another+Hand&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Rancho&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="/favicon.png" />
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
